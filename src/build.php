@@ -49,77 +49,58 @@ foreach ($a as $s) {
 }
 
 // load votes data
+$votes ["1995"] = array ("year" => 1995, "title" => "1995", "data" => loadVotes (1995, 3));
+$votes ["1996"] = array ("year" => 1996, "title" => "1996", "data" => loadVotes (1996, 1));
+$votes ["2000"] = array ("year" => 2000, "title" => "2000", "data" => loadVotes (2000, 1));
+$votes ["2003"] = array ("year" => 2003, "title" => "2003", "data" => loadVotes (2003, 8));
+$votes ["2004"] = array ("year" => 2004, "title" => "2004", "data" => loadVotes (2004, 4));
+$votes ["2007"] = array ("year" => 2007, "title" => "2007", "data" => loadVotes (2007, 1));
+$votes ["2008"] = array ("year" => 2008, "title" => "2008", "data" => loadVotes (2008, 6));
+$votes ["2011"] = array ("year" => 2011, "title" => "2011", "data" => loadVotes (2011, 2));
+$votes ["2012"] = array ("year" => 2012, "title" => "2012", "data" => loadVotes (2012, 2));
+$votes ["2016"] = array ("year" => 2016, "title" => "2016", "data" => loadVotes (2016, 2));
 
-loadVotes (1995, 3);
-loadVotes (1996, 1);
-loadVotes (2000, 1);
-loadVotes (2003, 8);
-loadVotes (2004, 4);
-loadVotes (2007, 1);
-loadVotes (2008, 6);
-loadVotes (2011, 2);
-loadVotes (2012, 2);
-loadVotes (2016, 2);
+$results = correlationTable ($votes, $population);
 
-$upToYears = 5;
-$avgs = array ();
 
-$results = array ();
+// load votes data
+$votes1996 ["1996-1"] = array ("year" => 1996, "title" => "Ельцин Б.Н. (1 тур)", "data" => loadVotes (1996, 1));
+$votes1996 ["1996-2"] = array ("year" => 1996, "title" => "Зюганов Г.А. (1 тур)", "data" => loadVotes (1996, 2));
+$votes1996 ["1996-3"] = array ("year" => 1996, "title" => "Лебедь А.И.", "data" => loadVotes (1996, 3));
+$votes1996 ["1996-4"] = array ("year" => 1996, "title" => "Явлинский Г.А.", "data" => loadVotes (1996, 4));
+$votes1996 ["1996-5"] = array ("year" => 1996, "title" => "Жириновский В.В.", "data" => loadVotes (1996, 5));
+$votes1996 ["1996-6"] = array ("year" => 1996, "title" => "Ельцин Б.Н. (2 тур)", "data" => loadVotes (1996, 6));
+$votes1996 ["1996-7"] = array ("year" => 1996, "title" => "Зюганов Г.А. (2 тур)", "data" => loadVotes (1996, 7));
+$votes1996 ["1996-8"] = array ("year" => 1996, "title" => "против всех", "data" => loadVotes (1996, 8));
 
-foreach ($votesYears as $year) {
-
-    echo $year . ":\t";
-
-    for ($dYear = -$upToYears; $dYear <=$upToYears; $dYear++) {
-		$otherYear = $year + $dYear;
-        $dsPopulation = array ();
-		$dsVotes = array ();
-
-        foreach ($population as $stateName => $years) {
-	    if (array_key_exists ($otherYear, $population [$stateName])
-		&& array_key_exists ($otherYear + 1, $population [$stateName])
-		&& array_key_exists ($stateName, $votes)
-		&& array_key_exists ($year, $votes [$stateName])
-		) {
-			$p = $population [$stateName] [$otherYear];
-			$pNext = $population [$stateName] [$otherYear + 1];
-	
-			$dsPopulation [$stateName] = ($pNext - $p) ;
-	
-			$dsVotes [$stateName] = $votes [$stateName] [$year];
-	    }
-	}
-
-	if (count ($dsPopulation) > 0 ) {
-	    $c = correlationPearson ($dsPopulation, $dsVotes);
-	    $avgs [$dYear] []= $c;
-
-	    $results [$year][$dYear] = sprintf ("%.2f", $c);
-
-	    echo sprintf ("%.2f", $c) . "\t";
-	} else {
-	    $results [$year][$dYear] = "*";
-
-	    echo "*    \t";
-	}
-    }
-echo "\n";
-}
-
-echo "avg:\t";
-    for ($dYear = -$upToYears; $dYear <=$upToYears; $dYear++) {
-	$c = array_sum ($avgs [$dYear]) / count ($avgs [$dYear]);
-	echo sprintf ("%.2f", $c) . "\t";
-
-	$results ["Среднее"][$dYear] = sprintf ("%.2f", $c);
-}
+$results1996 = correlationTable ($votes1996, $population);
 
 echo "\n\n";
+
+foreach ($votes as $voteInfo) {
+	$votesData = $voteInfo ["data"];
+	$votesTitle = $voteInfo ["title"];
+	
+	foreach ($votesData as $stateName => $n) {
+		$votesToPrint [$stateName] [$votesTitle] = $n;
+	}
+}
+
+foreach ($votes1996 as $voteInfo) {
+	$votesData = $voteInfo ["data"];
+	$votesTitle = $voteInfo ["title"];
+	
+	foreach ($votesData as $stateName => $n) {
+		$votesToPrint1996 [$stateName] [$votesTitle] = $n;
+	}
+}
 
 $content = file_get_contents (dirname (__FILE__) . "/../template/template.html");
 
 $content = str_replace ("%TABLE_RESULTS%", printTable ($results), $content);
-$content = str_replace ("%TABLE_VOTES%", printTable ($votes), $content);
+$content = str_replace ("%TABLE_RESULTS_1996%", printTable ($results1996), $content);
+$content = str_replace ("%TABLE_VOTES%", printTable ($votesToPrint), $content);
+$content = str_replace ("%TABLE_VOTES_1996%", printTable ($votesToPrint1996), $content);
 $content = str_replace ("%TABLE_POPULATION%", printTable ($population), $content);
 
 file_put_contents (dirname (__FILE__) . "/../docs/index.html", $content);
@@ -145,8 +126,73 @@ function correlationPearson ($xA, $yA) {
     return $sCov / $q;
 }
 
+function correlationTable ($votes, $population) {
+	
+	$upToYears = 5;
+	$avgs = array ();	
+	$results = array ();
+
+	foreach ($votes as $voteInfo) {
+		
+		$year = $voteInfo ["year"];
+		$votesData = $voteInfo ["data"];
+		$votesTitle = $voteInfo ["title"];
+		
+		echo $votesTitle . ":\t";
+	
+		for ($dYear = -$upToYears; $dYear <=$upToYears; $dYear++) {
+			$otherYear = $year + $dYear;
+			$dsPopulation = array ();
+			$dsVotes = array ();
+	
+			foreach ($population as $stateName => $years) {
+				if (array_key_exists ($otherYear, $population [$stateName])
+				&& array_key_exists ($otherYear + 1, $population [$stateName])
+				&& array_key_exists ($stateName, $votesData)
+				) {
+					$p = $population [$stateName] [$otherYear];
+					$pNext = $population [$stateName] [$otherYear + 1];
+			
+					$dsPopulation [$stateName] = ($pNext - $p) ;
+			
+					$dsVotes [$stateName] = $votesData [$stateName];
+				}
+			}
+		
+			if (count ($dsPopulation) > 0 ) {
+				$c = correlationPearson ($dsPopulation, $dsVotes);
+				$avgs [$dYear] []= $c;
+		
+				$results [$votesTitle][$dYear] = sprintf ("%.2f", $c);
+		
+				echo sprintf ("%.2f", $c) . "\t";
+				
+			} else {
+				$results [$votesTitle][$dYear] = "*";
+		
+				echo "*    \t";
+			}
+		}
+		echo "\n";
+	}
+	
+	echo "avg:\t";
+		for ($dYear = -$upToYears; $dYear <=$upToYears; $dYear++) {
+		$c = array_sum ($avgs [$dYear]) / count ($avgs [$dYear]);
+		echo sprintf ("%.2f", $c) . "\t";
+	
+		$results ["Среднее"][$dYear] = sprintf ("%.2f", $c);
+	}
+	
+	return $results;
+	
+}
+
+
 function loadVotes ($year, $column) {
-    global $population, $votes, $votesYears;
+    global $population;
+	
+	$voteRow = array ();
 
     $votesYears []= $year;
 
@@ -179,13 +225,15 @@ function loadVotes ($year, $column) {
 
 	    if ($n > 0) {
 		if (array_key_exists ($stateName, $population)) {
-		    $votes [$stateName] [$year] = $n;
+		    $voteRow [$stateName] = $n;
 		} else {
 		    echo $stateName . "\n";
 		}
 	    }
 	}
     }
+	
+	return $voteRow;
 }
 
 
