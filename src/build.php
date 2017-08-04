@@ -76,9 +76,40 @@ $votes1996 ["1996-6"] = array ("year" => 1996, "title" => "Ельцин Б.Н. (
 $votes1996 ["1996-7"] = array ("year" => 1996, "title" => "Зюганов Г.А. (2 тур)", "data" => loadVotes (1996, 7));
 $votes1996 ["1996-8"] = array ("year" => 1996, "title" => "против всех", "data" => loadVotes (1996, 8));
 
+$votes1991_ref ["1991-1-1"] = array ("year" => 1991, "title" => "+СССР", "data" => loadVotes ("1991-ref", 4));
+$votes1991_ref ["1991-1-2"] = array ("year" => 1991, "title" => "-СССР", "data" => loadVotes ("1991-ref", 5));
+$votes1991_ref ["1991-1-3"] = array ("year" => 1991, "title" => "+през", "data" => loadVotes ("1991-ref", 6));
+$votes1991_ref ["1991-1-4"] = array ("year" => 1991, "title" => "-през", "data" => loadVotes ("1991-ref", 7));
+
+
 $results = correlationTable ($votes, $population);
 $results1995 = correlationTable ($votes1995, $population);
 $results1996 = correlationTable ($votes1996, $population);
+$results1991ref = correlationTable ($votes1991_ref, $population);
+
+$votes1991_pres ["1991-2-1"] = array ("year" => 1991, "title" => "Участие", "data" => loadVotes ("1991-pres", 2));
+$votes1991_pres ["1991-2-2"] = array ("year" => 1991, "title" => "Бакатин", "data" => loadVotes ("1991-pres", 3));
+$votes1991_pres ["1991-2-3"] = array ("year" => 1991, "title" => "Ельцин", "data" => loadVotes ("1991-pres", 4));
+$votes1991_pres ["1991-2-4"] = array ("year" => 1991, "title" => "Жириновский", "data" => loadVotes ("1991-pres", 5));
+$votes1991_pres ["1991-2-5"] = array ("year" => 1991, "title" => "Макашов", "data" => loadVotes ("1991-pres", 6));
+$votes1991_pres ["1991-2-6"] = array ("year" => 1991, "title" => "Рыжков", "data" => loadVotes ("1991-pres", 7));
+$votes1991_pres ["1991-2-7"] = array ("year" => 1991, "title" => "Тулеев", "data" => loadVotes ("1991-pres", 8));
+$votes1991_pres ["1991-2-8"] = array ("year" => 1991, "title" => "Против всех", "data" => loadVotes ("1991-pres", 9));
+$votes1991_pres ["1991-2-9"] = array ("year" => 1991, "title" => "Недейств", "data" => loadVotes ("1991-pres", 10));
+
+$results1991pres = correlationTable ($votes1991_pres, $population);
+                                      
+$votes1993_parl ["1993-parl-1"] = array ("year" => 1993, "title" => "АПР", "data" => loadVotes ("1993-parl", 1));
+$votes1993_parl ["1993-parl-2"] = array ("year" => 1993, "title" => "ЯБЛоко", "data" => loadVotes ("1993-parl", 2));
+$votes1993_parl ["1993-parl-3"] = array ("year" => 1993, "title" => "ВР", "data" => loadVotes ("1993-parl", 3));
+$votes1993_parl ["1993-parl-4"] = array ("year" => 1993, "title" => "ДПР", "data" => loadVotes ("1993-parl", 4));
+$votes1993_parl ["1993-parl-5"] = array ("year" => 1993, "title" => "КПРФ", "data" => loadVotes ("1993-parl", 5));
+$votes1993_parl ["1993-parl-6"] = array ("year" => 1993, "title" => "ЛДПР", "data" => loadVotes ("1993-parl", 6));
+$votes1993_parl ["1993-parl-7"] = array ("year" => 1993, "title" => "ПР", "data" => loadVotes ("1993-parl", 7));
+$votes1993_parl ["1993-parl-8"] = array ("year" => 1993, "title" => "ЖР", "data" => loadVotes ("1993-parl", 8));
+$votes1993_parl ["1993-parl-9"] = array ("year" => 1993, "title" => "РДДР", "data" => loadVotes ("1993-parl", 9));
+
+$results1993parl = correlationTable ($votes1993_parl, $population);
 
 echo "\n\n";
 
@@ -90,6 +121,17 @@ foreach ($votes as $voteInfo) {
 		$votesToPrint [$stateName] [$votesTitle] = $n;
 	}
 }
+
+
+foreach ($votes1993_parl as $voteInfo) {
+	$votesData = $voteInfo ["data"];
+	$votesTitle = $voteInfo ["title"];
+	
+	foreach ($votesData as $stateName => $n) {
+		$votesToPrint1993 [$stateName] [$votesTitle] = $n;
+	}
+}
+
 
 foreach ($votes1995 as $voteInfo) {
 	$votesData = $voteInfo ["data"];
@@ -113,9 +155,11 @@ foreach ($votes1996 as $voteInfo) {
 $content = file_get_contents (dirname (__FILE__) . "/../template/template.html");
 
 $content = str_replace ("%TABLE_RESULTS%", printTable ($results), $content);
+$content = str_replace ("%TABLE_RESULTS_1993%", printTable ($results1993parl), $content);
 $content = str_replace ("%TABLE_RESULTS_1995%", printTable ($results1995), $content);
 $content = str_replace ("%TABLE_RESULTS_1996%", printTable ($results1996), $content);
 $content = str_replace ("%TABLE_VOTES%", printTable ($votesToPrint), $content);
+$content = str_replace ("%TABLE_VOTES_1993%", printTable ($votesToPrint1993), $content);
 $content = str_replace ("%TABLE_VOTES_1995%", printTable ($votesToPrint1995), $content);
 $content = str_replace ("%TABLE_VOTES_1996%", printTable ($votesToPrint1996), $content);
 $content = str_replace ("%TABLE_POPULATION%", printTable ($population), $content);
@@ -197,13 +241,19 @@ function correlationTable ($votes, $population) {
 	}
 	
 	echo "avg:\t";
-		for ($dYear = -$upToYears; $dYear <=$upToYears; $dYear++) {
-		$c = array_sum ($avgs [$dYear]) / count ($avgs [$dYear]);
-		echo sprintf ("%.2f", $c) . "\t";
 	
-		$results ["Среднее"][$dYear] = sprintf ("%.2f", $c);
+	for ($dYear = -$upToYears; $dYear <=$upToYears; $dYear++) {
+		if (array_key_exists ($dYear, $avgs)) {
+			$c = array_sum ($avgs [$dYear]) / count ($avgs [$dYear]);
+			echo sprintf ("%.2f", $c) . "\t";
+			$results ["Среднее"][$dYear] = sprintf ("%.2f", $c);
+		} else {
+			echo "*\t";
+			$results ["Среднее"][$dYear] = "*";
+		}
+		
 	}
-	
+	echo "\n\n";
 	return $results;
 	
 }
@@ -274,7 +324,42 @@ function fixStateName ($s) {
 	"Республика Крым" => "???",
 	"Севастополь" => "???",
 	"РФ, всего" => "???",
+	
+	// 1991.ref
+	"Регионы" => "???",
+	"Горно-Алтайская" => "Республика Алтай",
+	"Камчатская" => "Камчатский край",
+	"Башкирия" => "Республика Башкортостан",
+	"Марий-Эл" => "Республика Марий Эл",
+	
+	// 1991.pres
+	"Ленинград (Спб)" => "Санкт-Петербург",
+	"Адыгея*" => "Республика Адыгея",
+	"Алтай*" => "Республика Алтай",
+	"Кабардино — Балкария" => "Кабардино-Балкарская Республика",
+	"Карачаево — Черкесия*" => "Карачаево-Черкесская Республика",
+	"Марийская" => "Республика Марий Эл",
+	"Татария" => "Республика Татарстан",
+	"Тува" => "Республика Тыва",
+	"Хакасия*" => "Республика Хакасия",
+	"Чечено-Ингушетия" => "???",
+	"Якутия" => "Республика Саха",
+	"Коми — Пермяцкий" => "???",
+	"Усть — Ордынский Бурятский" => "???",
+	"Ханты — Мансийский" => "???",
+	"Ямало — Ненецкий" => "???",
+	"Российская Федерация" => "???",
+	"Итого" => "???",
+	"Итого по краям и областям" => "???",
 
+	// 1993.parl
+	"Ингушская" => "Республика Ингушетия",
+	"Карачаево-Черкессия" => "Карачаево-Черкесская Республика",
+	"Хакассия" => "Республика Хакасия",
+	"Ульяновсккая" => "Ульяновская область",
+	"Агинский-Бурятский" => "???",
+	"Усть-Ордынский" => "???",
+		
 	// 1995
 	"Республика Адыгея (Адыгея)" => "Республика Адыгея",
 	"Респуб. Северная Осетия - Алания" => "Республика Северная Осетия - Алания",
