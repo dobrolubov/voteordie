@@ -60,10 +60,13 @@ $votes ["2011"] = array ("year" => 2011, "title" => "2011", "data" => loadVotes 
 $votes ["2012"] = array ("year" => 2012, "title" => "2012", "data" => loadVotes (2012, 2));
 $votes ["2016"] = array ("year" => 2016, "title" => "2016", "data" => loadVotes (2016, 2));
 
-$results = correlationTable ($votes, $population);
+$votes1995 ["1995-1"] = array ("year" => 1995, "title" => "КПРФ", "data" => loadVotes (1995, 1));
+$votes1995 ["1995-2"] = array ("year" => 1995, "title" => "ЛДПР", "data" => loadVotes (1995, 2));
+$votes1995 ["1995-3"] = array ("year" => 1995, "title" => "НДР", "data" => loadVotes (1995, 3));
+$votes1995 ["1995-4"] = array ("year" => 1995, "title" => "Яблоко", "data" => loadVotes (1995, 4));
+$votes1995 ["1995-5"] = array ("year" => 1995, "title" => "ДВР", "data" => loadVotes (1995, 5));
+$votes1995 ["1995-6"] = array ("year" => 1995, "title" => "АПР", "data" => loadVotes (1995, 6));
 
-
-// load votes data
 $votes1996 ["1996-1"] = array ("year" => 1996, "title" => "Ельцин Б.Н. (1 тур)", "data" => loadVotes (1996, 1));
 $votes1996 ["1996-2"] = array ("year" => 1996, "title" => "Зюганов Г.А. (1 тур)", "data" => loadVotes (1996, 2));
 $votes1996 ["1996-3"] = array ("year" => 1996, "title" => "Лебедь А.И.", "data" => loadVotes (1996, 3));
@@ -73,6 +76,8 @@ $votes1996 ["1996-6"] = array ("year" => 1996, "title" => "Ельцин Б.Н. (
 $votes1996 ["1996-7"] = array ("year" => 1996, "title" => "Зюганов Г.А. (2 тур)", "data" => loadVotes (1996, 7));
 $votes1996 ["1996-8"] = array ("year" => 1996, "title" => "против всех", "data" => loadVotes (1996, 8));
 
+$results = correlationTable ($votes, $population);
+$results1995 = correlationTable ($votes1995, $population);
 $results1996 = correlationTable ($votes1996, $population);
 
 echo "\n\n";
@@ -86,6 +91,16 @@ foreach ($votes as $voteInfo) {
 	}
 }
 
+foreach ($votes1995 as $voteInfo) {
+	$votesData = $voteInfo ["data"];
+	$votesTitle = $voteInfo ["title"];
+	
+	foreach ($votesData as $stateName => $n) {
+		$votesToPrint1995 [$stateName] [$votesTitle] = $n;
+	}
+}
+
+
 foreach ($votes1996 as $voteInfo) {
 	$votesData = $voteInfo ["data"];
 	$votesTitle = $voteInfo ["title"];
@@ -98,8 +113,10 @@ foreach ($votes1996 as $voteInfo) {
 $content = file_get_contents (dirname (__FILE__) . "/../template/template.html");
 
 $content = str_replace ("%TABLE_RESULTS%", printTable ($results), $content);
+$content = str_replace ("%TABLE_RESULTS_1995%", printTable ($results1995), $content);
 $content = str_replace ("%TABLE_RESULTS_1996%", printTable ($results1996), $content);
 $content = str_replace ("%TABLE_VOTES%", printTable ($votesToPrint), $content);
+$content = str_replace ("%TABLE_VOTES_1995%", printTable ($votesToPrint1995), $content);
 $content = str_replace ("%TABLE_VOTES_1996%", printTable ($votesToPrint1996), $content);
 $content = str_replace ("%TABLE_POPULATION%", printTable ($population), $content);
 
@@ -152,10 +169,13 @@ function correlationTable ($votes, $population) {
 				) {
 					$p = $population [$stateName] [$otherYear];
 					$pNext = $population [$stateName] [$otherYear + 1];
+					
+					if ($p > 0 && $pNext > 0) {
 			
-					$dsPopulation [$stateName] = ($pNext - $p) ;
+						$dsPopulation [$stateName] = ($pNext - $p) ;
 			
-					$dsVotes [$stateName] = $votesData [$stateName];
+						$dsVotes [$stateName] = $votesData [$stateName];
+					}
 				}
 			}
 		
@@ -385,16 +405,24 @@ function printTable ($t) {
     $r .= "</tr>\n";
 
     foreach ($t as $k => $v) {
-	$r .= "<tr><th>$k</th>";
-	foreach ($colCap as $i) {
-	    if (array_key_exists ($k, $t) && array_key_exists ($i, $t [$k])) {
-		$c = $t [$k] [$i];
-	    } else {
-		$c = "&nbsp;";
-	    }
-	    $r .= "<td>" . $c . "</td>";
-	}
-	$r .= "</tr>\n";
+		$min = 1000000000;
+		$max = 0;
+		$r .= "<tr><th>$k</th>";
+		foreach ($colCap as $i) {
+			if (array_key_exists ($k, $t) && array_key_exists ($i, $t [$k])) {
+				$c = $t [$k] [$i];
+				$min = min ($c, $min);
+				$max = max ($c, $max);
+			} else {
+				$c = "&nbsp;";
+			}
+			$r .= "<td>" . $c . "</td>";
+		}
+/*		
+		$minP = $min / $max * 100;
+		$r .= "<td>" . sprintf ("%.02f", $minP) . "</td>";
+*/		
+		$r .= "</tr>\n";
     }
     $r .= "</table>\n";
 
